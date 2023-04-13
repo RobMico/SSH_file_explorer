@@ -18,7 +18,7 @@ class Request
     public function getArgs(){
         if($this->getMethod()==="POST")
         {
-            return json_decode(file_get_contents('php://input'), true);
+            return file_get_contents('php://input');
         }
         else{
             return $_GET;

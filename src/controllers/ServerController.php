@@ -1,10 +1,10 @@
 <?php
 namespace app;
-require_once __DIR__ . '/../autoloadApp.php';
+//require_once __DIR__ . '/../autoloadApp.php';
 
 class ServerController{
-    public function Connect($args){
-        //connect via ssh
+    public function Connect($body){
+        $rempte = new RemoteServer($_POST);
     }
 
     public function GetView($args){

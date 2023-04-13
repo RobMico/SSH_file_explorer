@@ -57,9 +57,7 @@ class Router
 
     public function renderView($view)
     {
-        $layoutContent = $this->layoutContent();
-        $viewContent = $this->viewContent($view);
-        return str_replace('{{content}}', $viewContent, $layoutContent);
+        require($this->viewsPath.'/'.$view);
     }
 
 }
