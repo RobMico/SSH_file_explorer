@@ -14,6 +14,17 @@ class Request
         return $path;
     }
 
+
+    public function getArgs(){
+        if($this->getMethod()==="POST")
+        {
+            return json_decode(file_get_contents('php://input'), true);
+        }
+        else{
+            return $_GET;
+        }
+    }
+
     public function getMethod()
     {
         return $_SERVER["REQUEST_METHOD"];

@@ -17,6 +17,12 @@ class Router
     {
         $this->routes['GET'][$path] = $callback;
     }
+
+    public function post($path, $callback)
+    {
+        $this->routes['POST'][$path] = $callback;
+    }
+    
     public function resolve()
     {
         $path = $this->request->getPath();
@@ -25,6 +31,8 @@ class Router
         if ($callback === null) {
             return "NOT FOUND";
         }
+        
+        //T O D O
         if (is_string($callback)) {
             if (!empty($this->viewsPath)) {
                 return $this->renderView($callback);;
@@ -32,7 +40,8 @@ class Router
             echo "Views path not specified";
             return;
         }
-        return call_user_func($callback);
+
+        return call_user_func($callback, $this->request->getArgs());
     }
 
     protected function layoutContent(){
