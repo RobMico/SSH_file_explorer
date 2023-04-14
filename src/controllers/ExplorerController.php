@@ -4,12 +4,25 @@ namespace app;
 
 class ExplorerController{
     public function sendCommand($body){
-        if(!array_key_exists('command', $body))
+        if(!$body['command']??false)
         {
             echo "Command not specified";
             return;
         }
-        $remote = new RemoteServer($body);
-        $remote->SendCommand($body["command"]);
+        session_start();
+        $responce=array();
+        $command = $body['command'];
+        $dir = $body['dir']??'';
+
+        $remote = new RemoteServer($_SESSION);
+        if($dir)
+        {
+            //echo 'cd '.$dir;
+            $remote->SendCommand('cd '.$dir.';');
+        }
+        $responce["result"] = $remote->SendCommand('cd '.$dir.';'.$command);
+        $responce["dir"] = $remote->SendCommand('cd '.$dir.';ls');
+
+        echo json_encode($responce);
     }
 }

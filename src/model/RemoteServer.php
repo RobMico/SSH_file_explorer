@@ -3,6 +3,7 @@ namespace app;
 
 use phpseclib3\Net\SSH2;
 use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\RSA\PrivateKey;
 
 //sudo ssh -i "Email_server_key.pem" ubuntu@ec2-54-154-51-197.eu-west-1.compute.amazonaws.com
 
@@ -10,77 +11,77 @@ use phpseclib3\Crypt\PublicKeyLoader;
 
 class RemoteServer
 {
-
+    protected $ssh;
     public function __construct($connectArgs)
     {
+        new SSH2('');
+        $this->ssh = null;
         session_start();
         if (isset($_SESSION['ssh'])) {
-            $ssh = $_SESSION['ssh'];
+            $this->ssh = $this->__connect($_SESSION);
         } else {
-            $key = null;
-            if (isset($_FILES['key']) && $_FILES['key']['error'] == UPLOAD_ERR_OK) {
-                // get the uploaded file path
-                $tmp_name = $_FILES['key']['tmp_name'];
-                // load the private key from the uploaded file
-                $key = PublicKeyLoader::load(file_get_contents($tmp_name));
-            } elseif (array_key_exists('key', $connectArgs)) {
-                $key = $connectArgs['key'];
-            }
-
-            if ($key === null || !array_key_exists('host', $connectArgs)||!array_key_exists('port', $connectArgs)||!array_key_exists('username', $connectArgs)) {
-                exit('Something was missed');
-            }
-            // create a new SSH2 instance and connect to the remote server
-            $ssh = new SSH2($connectArgs["host"], $connectArgs["port"]);
-            if (!$ssh->login($connectArgs['username'], $key)) {
-                exit('Login Failed');
-            }
-            // save the SSH connection object to the session variable
-            $_SESSION['ssh'] = $ssh;
+            $this->ssh = $this->__connect($connectArgs);
         }
-        $ssh = $_SESSION['ssh'];
-        echo $ssh->exec('pwd');
 
+        if ($this->ssh === null) {
+            session_destroy();
+            exit("Session is null");
+        }
 
-        // if (isset($_SESSION['ssh'])) {
-        //     $ssh = $_SESSION['ssh'];
-        // } else {
-        //     // check if a file was uploaded
-        //     if (isset($_FILES['private_key']) && $_FILES['private_key']['error'] == UPLOAD_ERR_OK) {
-        //         // get the uploaded file path
-        //         $tmp_name = $_FILES['private_key']['tmp_name'];
+        //echo $this->ssh->exec('pwd');
 
-        //         // load the private key from the uploaded file
-        //         $key = PublicKeyLoader::load(file_get_contents($tmp_name));
-
-        //         // create a new SSH2 instance and connect to the remote server
-        //         $ssh = new SSH2('example.com');
-        //         if (!$ssh->login('username', $key)) {
-        //             exit('Login Failed');
-        //         }
-
-        //         // save the SSH connection object to the session variable
-        //         $_SESSION['ssh'] = $ssh;
-        //     } else {
-        //         exit('No file uploaded or file upload error.');
-        //     }
-        // }
-
-
-
-        //$key = PublicKeyLoader::load(file_get_contents(__DIR__.'/../../Email_server_key.pem'));
-        //$ssh = new SSH2('ec2-54-154-51-197.eu-west-1.compute.amazonaws.com', 22);
-        //if (!$ssh->login('ubuntu', $key)){
-        //  exit('Login Failed');
-        //}
-        //echo $ssh->exec('pwd');
-        //$this->connectArgs = $connectArgs;
     }
 
-    public $connectArgs;
+    protected function __connect($args)
+    {
+        $key = null;
 
+        if (array_key_exists('key', $args)) {
+            $key = $args['key'];
+            if($args['Key_not_password']??false){
+                $key_password = $args['key_password'] ?? false;
+                $key = PublicKeyLoader::load($key, $key_password = false);
+            }
+            else{
+                $_SESSION['key'] = $key;    
+            }
+
+        } elseif (isset($_FILES['key']) && $_FILES['key']['error'] == UPLOAD_ERR_OK) {
+            $tmp_name = $_FILES['key']['tmp_name'];
+            $key = file_get_contents($tmp_name);
+            $key_password = $args['key_password'] ?? false;
+
+            $_SESSION['key_password'] = $key_password;
+            $_SESSION['key'] = $key;
+            $_SESSION['Key_not_password'] = true;
+
+            $key = PublicKeyLoader::load($key, $key_password = false);
+        }
+        $username = $args['username'] ?? null;
+        $port = $args["port"];
+        $host = $args["host"];
+
+        if ($username === null || $host === null || $port === null || $key === null) {
+            session_destroy();
+            exit("Some argument missed");
+        }
+
+
+        $ssh = new SSH2($host, $port);
+        if (!$ssh->login($username, $key)) {
+            session_destroy();
+            exit('Login Failed');
+        } { //save to session
+            $_SESSION["ssh"] = serialize($ssh);
+            $_SESSION["port"] = $port;
+            $_SESSION["host"] = $host;
+            $_SESSION["username"] = $username;
+        }
+        return $ssh;
+    }
     public function SendCommand($command, $isLS = false)
     {
+        return $this->ssh->exec($command);
         //send command via ssh
         //if not ls, call ls and return current dir
         //return responce
