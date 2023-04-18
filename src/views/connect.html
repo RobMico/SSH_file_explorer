@@ -1,11 +1,80 @@
 <!DOCTYPE html>
 <html>
-<head>
 
+<head>
+    <title>Connect</title>
+    <script src="config.js"></script>
 </head>
+
 <body>
-    <form>
-        HELLO
+    <form id="connectForm" method="post" onsubmit="beforeSubmit()" enctype = "multipart/form-data" action="http://localhost:7575/connect">
+        <h2>SSH credentials</h2>
+        <label>username:</label>
+        <input type="text" name="username"/>
+        <br>
+        <label>key:</label>
+        <div>
+            
+            <input type="radio" id="fileKey" name="KeyType" onclick="keyTypeChange('fileKey')" value="file" checked>
+            <label for="fileKey">File key </label>
+            <label>/</label>
+            <input type="radio" id="textKey" name="KeyType" onclick="keyTypeChange('password')" value="password">
+            <label for="textKey">Text key</label>
+            <div id="KeyFile">
+                <label>Key file:</label> <input type="file" name="key"/>
+                <input type="text" placeholder="Key password" name="key_password"/>
+            </div>
+            <div id="KeyText" style="display: none;">
+                <input type="text" placeholder="password" name="text_key"/>
+            </div>
+        </div>
+
+        <br>
+        <label>host:</label>
+        <input type="text" value="localhost" name="host"/>
+        <br>
+        <label>port:</label>
+        <input type="number" value="22" name="port"/>
+        <br>
+        <button>Submit</button>
     </form>
+    <script> 
+        const form = document.getElementById("connectForm");
+        form.action = 'http://localhost:7575/connect';//connect_URL;
+        form.addEventListener('formdata', (e)=>{
+            const formData = e.formData;
+            if(formData.get("KeyType")==="password")
+            {
+                formData.delete("key_password");
+                formData.delete("KeyType");
+                formData.append("key", formData.get("text_key"));
+                formData.delete("text_key");
+            }
+            else{
+                formData.delete("KeyType");
+                if(!formData.get("key_password")){
+                    formData.delete("key_password");
+                }
+            }
+            console.log(formData)
+
+            //if()
+        });
+
+
+        function keyTypeChange(type) {
+            let fileInputs = document.getElementById('KeyFile');
+            let textInputs = document.getElementById('KeyText');
+            if (type === 'fileKey') {
+                fileInputs.style.display = "block";
+                textInputs.style.display = "none";
+            }
+            else{
+                textInputs.style.display = "block";
+                fileInputs.style.display = "none";
+            }
+        }
+    </script>
 </body>
+
 </html>

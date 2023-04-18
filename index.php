@@ -20,11 +20,11 @@ $app = new Application();
 $app->setViewsPath(__DIR__ . '/src/views');
 
 
-$app->router->get('/auth', 'connect.html');
+//$app->router->get('/auth', 'connect.html');
 
 
-$app->router->post('/connect', [$serverController, 'Connect']);
 $app->router->get('/', [$serverController, 'GetView']);
+$app->router->post('/connect', [$serverController, 'Connect']);
 $app->router->post('/explorer', [$explorerController, 'sendCommand']);
 $app->router->post('/terminal', [$terminalController, 'sendCommand']);
 

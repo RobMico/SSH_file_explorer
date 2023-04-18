@@ -4,11 +4,19 @@ namespace app;
 
 class ServerController{
     public function Connect($body){
+        session_start();
         $rempte = new RemoteServer($_POST);
-        echo "OK";
+        header('Location: /');
     }
 
     public function GetView($args){
-        echo "GET VIEW";
+        session_start();
+        if(isset($_SESSION['ssh']))
+        {
+            require __DIR__.'/../views/main.html';
+        }
+        else{
+            require __DIR__.'/../views/connect.html';
+        }
     }
 }

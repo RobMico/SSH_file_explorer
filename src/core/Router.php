@@ -22,20 +22,29 @@ class Router
     {
         $this->routes['POST'][$path] = $callback;
     }
-    
+
     public function resolve()
     {
         $path = $this->request->getPath();
         $method = $this->request->getMethod();
         $callback = $this->routes[$method][$path] ?? null;
         if ($callback === null) {
-            return "NOT FOUND";
+            $path = $this->viewsPath . $this->request->getPath();
+            echo $this->request->getPath();
+
+            if (str_contains($path, '..')) {
+                exit("NOT FOUND");
+            } else {
+                require $path;
+            }
+            return;
         }
-        
+
         //T O D O
         if (is_string($callback)) {
             if (!empty($this->viewsPath)) {
-                return $this->renderView($callback);;
+                return $this->renderView($callback);
+                ;
             }
             echo "Views path not specified";
             return;
@@ -44,12 +53,14 @@ class Router
         return call_user_func($callback, $this->request->getArgs());
     }
 
-    protected function layoutContent(){
+    protected function layoutContent()
+    {
         ob_start();
         include_once "$this->viewsPath/layouts/main.php";
         return ob_clean();
     }
-    protected function viewContent($view){
+    protected function viewContent($view)
+    {
         ob_start();
         include_once "$this->viewsPath/$view.php";
         return ob_clean();
@@ -57,7 +68,7 @@ class Router
 
     public function renderView($view)
     {
-        require($this->viewsPath.'/'.$view);
+        require($this->viewsPath . '/' . $view);
     }
 
 }

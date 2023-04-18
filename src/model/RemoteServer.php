@@ -16,7 +16,6 @@ class RemoteServer
     {
         new SSH2('');
         $this->ssh = null;
-        session_start();
         if (isset($_SESSION['ssh'])) {
             $this->ssh = $this->__connect($_SESSION);
         } else {
@@ -35,18 +34,8 @@ class RemoteServer
     protected function __connect($args)
     {
         $key = null;
-
-        if (array_key_exists('key', $args)) {
-            $key = $args['key'];
-            if($args['Key_not_password']??false){
-                $key_password = $args['key_password'] ?? false;
-                $key = PublicKeyLoader::load($key, $key_password = false);
-            }
-            else{
-                $_SESSION['key'] = $key;    
-            }
-
-        } elseif (isset($_FILES['key']) && $_FILES['key']['error'] == UPLOAD_ERR_OK) {
+        
+        if (isset($_FILES['key']) && $_FILES['key']['error'] == UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['key']['tmp_name'];
             $key = file_get_contents($tmp_name);
             $key_password = $args['key_password'] ?? false;
@@ -56,7 +45,19 @@ class RemoteServer
             $_SESSION['Key_not_password'] = true;
 
             $key = PublicKeyLoader::load($key, $key_password = false);
+        } elseif(array_key_exists('key', $args)){
+            $key = $args['key'];
+            if ($args['Key_not_password'] ?? false) {
+                $key_password = $args['key_password'] ?? false;
+                $key = PublicKeyLoader::load($key, $key_password = false);
+            } else {
+                $_SESSION['key'] = $key;
+            }
         }
+
+        var_dump(isset($_FILES['key']));
+        var_dump(array_key_exists('key', $args));
+
         $username = $args['username'] ?? null;
         $port = $args["port"];
         $host = $args["host"];
@@ -66,16 +67,23 @@ class RemoteServer
             exit("Some argument missed");
         }
 
-
-        $ssh = new SSH2($host, $port);
-        if (!$ssh->login($username, $key)) {
+        try {
+            $ssh = new SSH2($host, $port);
+            if (!$ssh->login($username, $key)) {
+                session_destroy();
+                exit('Login Failed');
+            } { //save to session
+                $_SESSION["ssh"] = true;
+                $_SESSION["port"] = $port;
+                $_SESSION["host"] = $host;
+                $_SESSION["username"] = $username;
+            }
+        } catch (\RuntimeException $e) {
             session_destroy();
             exit('Login Failed');
-        } { //save to session
-            $_SESSION["ssh"] = serialize($ssh);
-            $_SESSION["port"] = $port;
-            $_SESSION["host"] = $host;
-            $_SESSION["username"] = $username;
+        } catch (\Throwable $e) {
+            session_destroy();
+            exit('Login Failed');
         }
         return $ssh;
     }
