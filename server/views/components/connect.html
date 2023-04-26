@@ -1,0 +1,65 @@
+<form enctype="multipart/form-data">
+    <h2>SSH credentials</h2>
+    <label>username:</label>
+    <input type="text" name="username" />
+    <br>
+    <label>key:</label>
+    <div>
+
+        <input type="radio" name="KeyType" onclick="keyTypeChange(this, 'fileKey')" value="file" checked>
+        <label for="fileKey">File key </label>
+        <label>/</label>
+        <input type="radio" name="KeyType" onclick="keyTypeChange(this, 'password')" value="password">
+        <label for="textKey">Text key</label>
+        <div class="fileKey">
+            <label>Key file:</label> <input type="file" name="key" />
+            <input type="text" placeholder="Key password" name="key_password" />
+        </div>
+        <div style="display: none;" class="passKey">
+            <input type="text" placeholder="password" name="text_key" />
+        </div>
+    </div>
+
+    <br>
+    <label>host:</label>
+    <input type="text" value="localhost" name="host" />
+    <br>
+    <label>port:</label>
+    <input type="number" value="22" name="port" />
+    <br>
+    <button>Submit</button>
+</form>
+<script>
+    // form.addEventListener('formdata', (e) => {
+    //     const formData = e.formData;
+    //     if (formData.get("KeyType") === "password") {
+    //         formData.delete("key_password");
+    //         formData.delete("KeyType");
+    //         formData.append("key", formData.get("text_key"));
+    //         formData.delete("text_key");
+    //     }
+    //     else {
+    //         formData.delete("KeyType");
+    //         if (!formData.get("key_password")) {
+    //             formData.delete("key_password");
+    //         }
+    //     }
+    //     console.log(formData)
+
+    //     //if()
+    // });
+
+
+    function keyTypeChange(check, type) {
+        const passKey = $(check).parent().children(".passKey");
+        const fileKey = $(check).parent().children(".fileKey");
+        if (type === 'password') {
+            $(fileKey).hide();//.style.display = "block";
+            $(passKey).show();//.style.display = "none";
+        }
+        else {
+            $(passKey).hide();//.style.display = "block";
+            $(fileKey).show();//.style.display = "none";
+        }
+    }
+</script>
