@@ -7,3 +7,11 @@
 .toRow *{
     display: inline-block;
 }
+
+.hide{
+    display: none;
+}
+
+.show{
+    display: block;
+}

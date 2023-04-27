@@ -30,26 +30,6 @@
     <button>Submit</button>
 </form>
 <script>
-    // form.addEventListener('formdata', (e) => {
-    //     const formData = e.formData;
-    //     if (formData.get("KeyType") === "password") {
-    //         formData.delete("key_password");
-    //         formData.delete("KeyType");
-    //         formData.append("key", formData.get("text_key"));
-    //         formData.delete("text_key");
-    //     }
-    //     else {
-    //         formData.delete("KeyType");
-    //         if (!formData.get("key_password")) {
-    //             formData.delete("key_password");
-    //         }
-    //     }
-    //     console.log(formData)
-
-    //     //if()
-    // });
-
-
     function keyTypeChange(check, type) {
         const passKey = $(check).parent().children(".passKey");
         const fileKey = $(check).parent().children(".fileKey");

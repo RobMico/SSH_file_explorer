@@ -8,6 +8,23 @@ class ComponentLoader extends HTMLElement {
         const response = await fetch(`/components/${file}.html`);
         const html = await response.text();
         this.innerHTML = html;
+
+        const scripts = this.querySelectorAll('script');
+        for (let i = 0; i < scripts.length; i++) {
+            const script = scripts[i];
+            const newScript = document.createElement('script');
+            if (script.hasAttribute('type')) {
+                newScript.type = script.type;
+            }
+            if (script.hasAttribute('src')) {
+                newScript.src = script.src;
+            } else {
+                newScript.innerHTML = script.innerHTML;
+            }
+            document.head.appendChild(newScript);
+        }
+        
+        this.dispatchEvent(new Event('load'));
     }
 
     connectedCallback() {
